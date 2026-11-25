@@ -26,6 +26,22 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'id_ID',
     siteName: 'KING AUTOLAMP',
+    title: 'KING AUTOLAMP — Light Up Your Drive',
+    description:
+      'KING AUTOLAMP menghadirkan solusi pencahayaan otomotif dengan pilihan produk lampu berkualitas untuk meningkatkan pencahayaan, kenyamanan, dan tampilan kendaraan.',
+    images: [
+      {
+        url: '/images/kingautolamp-logo.png',
+        width: 685,
+        height: 150,
+        alt: 'KING AUTOLAMP',
+      },
+    ],
+  },
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/icon.png',
   },
 };
 
