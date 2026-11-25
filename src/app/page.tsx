@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, ChevronRight, Shield, Package, MessageCircle, Wrench, Zap, TrendingUp } from 'lucide-react';
@@ -7,7 +8,7 @@ import { PRODUCTS, TESTIMONIALS } from '@/data/products';
 import ProductCard from '@/components/ui/ProductCard';
 import StarRating from '@/components/ui/StarRating';
 import { useCart } from '@/context/CartContext';
-import { CartItem } from '@/types';
+import { CartItem, Product } from '@/types';
 
 const CATEGORIES = [
   {
@@ -73,8 +74,23 @@ const WHY_US = [
 
 export default function HomePage() {
   const { addItem } = useCart();
+  const [products, setProducts] = useState<Product[]>(PRODUCTS);
 
-  const handleAddToCart = (product: (typeof PRODUCTS)[0]) => {
+  useEffect(() => {
+    fetch('/api/products', { cache: 'no-store' })
+      .then((res) => {
+        if (res.ok) return res.json();
+        throw new Error('Failed to fetch');
+      })
+      .then((data) => {
+        if (data.products && Array.isArray(data.products)) {
+          setProducts(data.products);
+        }
+      })
+      .catch((err) => console.warn('Using static products fallback:', err));
+  }, []);
+
+  const handleAddToCart = (product: Product) => {
     const firstVariant = product.variants[0];
     const item: CartItem = {
       product_id: product.id,
@@ -88,8 +104,8 @@ export default function HomePage() {
     addItem(item);
   };
 
-  const bestSellers = PRODUCTS.filter((p) => p.is_best_seller && p.is_active);
-  const newArrivals = PRODUCTS.filter((p) => p.is_new_arrival && p.is_active);
+  const bestSellers = products.filter((p) => p.is_best_seller && p.is_active);
+  const newArrivals = products.filter((p) => p.is_new_arrival && p.is_active);
 
   return (
     <div className="pt-16 md:pt-20">

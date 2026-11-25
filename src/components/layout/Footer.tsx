@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Instagram, MessageCircle, MapPin, Clock, ArrowRight } from 'lucide-react';
+import { Instagram, MessageCircle, MapPin, Clock, ArrowRight, ShieldCheck } from 'lucide-react';
 import { storeConfig } from '@/lib/config';
 
 const footerLinks = {
@@ -10,6 +10,7 @@ const footerLinks = {
     { label: 'Categories', href: '/categories' },
     { label: 'About Us', href: '/about' },
     { label: 'Contact', href: '/contact' },
+    { label: 'Admin Login', href: '/admin' },
   ],
   Categories: [
     { label: 'LED Projector', href: '/products?category=LED+Projector' },
@@ -131,9 +132,19 @@ export default function Footer() {
           <p className="text-silver text-sm">
             © {year} KING AUTOLAMP. All rights reserved.
           </p>
-          <p className="text-silver-dark text-xs tracking-wider uppercase">
-            Dark Premium Automotive Lighting — Indonesia
-          </p>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/admin"
+              className="text-silver-dark hover:text-primary transition-colors text-xs flex items-center gap-1"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              Admin Portal
+            </Link>
+            <span className="text-white/10">|</span>
+            <p className="text-silver-dark text-xs tracking-wider uppercase">
+              Dark Premium Automotive Lighting — Indonesia
+            </p>
+          </div>
         </div>
       </div>
     </footer>

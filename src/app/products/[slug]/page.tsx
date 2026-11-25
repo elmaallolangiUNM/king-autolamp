@@ -1,28 +1,28 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { PRODUCTS } from '@/data/products';
+import { getStoredProducts } from '@/lib/productService';
 import ProductDetailClient from './ProductDetailClient';
 
-export function generateStaticParams() {
-  return PRODUCTS.map((p) => ({ slug: p.slug }));
-}
+export const dynamic = 'force-dynamic';
 
-export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
-  const product = PRODUCTS.find((p) => p.slug === params.slug && p.is_active);
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const products = await getStoredProducts();
+  const product = products.find((p) => p.slug === params.slug && p.is_active);
   if (!product) {
-    return { title: 'Produk Tidak Ditemukan' };
+    return { title: 'Produk Tidak Ditemukan | KING AUTOLAMP' };
   }
   return {
-    title: product.name,
+    title: `${product.name} | KING AUTOLAMP`,
     description: product.description,
   };
 }
 
-export default function ProductDetailPage({ params }: { params: { slug: string } }) {
-  const product = PRODUCTS.find((p) => p.slug === params.slug && p.is_active);
+export default async function ProductDetailPage({ params }: { params: { slug: string } }) {
+  const products = await getStoredProducts();
+  const product = products.find((p) => p.slug === params.slug && p.is_active);
   if (!product) return notFound();
 
-  const related = PRODUCTS.filter(
+  const related = products.filter(
     (p) => p.id !== product.id && p.category === product.category && p.is_active
   ).slice(0, 4);
 

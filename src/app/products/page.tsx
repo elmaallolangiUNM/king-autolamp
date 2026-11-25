@@ -32,6 +32,21 @@ const ITEMS_PER_PAGE = 8;
 function ProductsContent() {
   const searchParams = useSearchParams();
   const { addItem } = useCart();
+  const [allProducts, setAllProducts] = useState<Product[]>(PRODUCTS);
+
+  useEffect(() => {
+    fetch('/api/products', { cache: 'no-store' })
+      .then((res) => {
+        if (res.ok) return res.json();
+        throw new Error('Failed to fetch');
+      })
+      .then((data) => {
+        if (data.products && Array.isArray(data.products)) {
+          setAllProducts(data.products);
+        }
+      })
+      .catch((err) => console.warn('Using static products fallback:', err));
+  }, []);
 
   const [filters, setFilters] = useState<FilterState>({
     category: (searchParams.get('category') as Category) || 'All',
@@ -71,7 +86,7 @@ function ProductsContent() {
   };
 
   // Filter logic
-  let filtered = PRODUCTS.filter((p) => p.is_active);
+  let filtered = allProducts.filter((p) => p.is_active);
 
   if (filters.category !== 'All') {
     filtered = filtered.filter((p) => p.category === filters.category);
