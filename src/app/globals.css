@@ -1,0 +1,114 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: #D71920;
+    --color-dark: #0B0B0D;
+    --color-charcoal: #17191D;
+    --color-silver: #A7A9AC;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-dark text-white font-sans antialiased;
+    background-color: #0B0B0D;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #17191D;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #D71920;
+    border-radius: 3px;
+  }
+
+  ::selection {
+    background: rgba(215, 25, 32, 0.3);
+    color: white;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary hover:bg-primary-dark text-white font-semibold px-6 py-3 rounded transition-all duration-200 inline-flex items-center gap-2;
+  }
+
+  .btn-outline {
+    @apply border border-silver/40 text-white hover:border-primary hover:bg-primary hover:text-white font-semibold px-6 py-3 rounded transition-all duration-200 inline-flex items-center gap-2;
+  }
+
+  .btn-ghost {
+    @apply border border-white/20 text-white hover:border-silver hover:bg-white/5 font-semibold px-6 py-3 rounded transition-all duration-200 inline-flex items-center gap-2;
+  }
+
+  .card {
+    @apply bg-dark-200 border border-white/5 rounded-xl overflow-hidden hover:border-silver/20 transition-all duration-300;
+  }
+
+  .section-title {
+    @apply text-3xl md:text-4xl font-bold font-display text-white;
+  }
+
+  .section-subtitle {
+    @apply text-silver text-base md:text-lg mt-2;
+  }
+
+  .accent-line {
+    @apply h-1 w-16 bg-primary rounded mt-3 mb-6;
+  }
+
+  .input-field {
+    @apply w-full bg-dark-300 border border-white/10 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors placeholder-silver;
+  }
+
+  .badge-new {
+    @apply text-xs font-bold bg-silver text-dark px-2 py-0.5 rounded;
+  }
+
+  .badge-sale {
+    @apply text-xs font-bold bg-primary text-white px-2 py-0.5 rounded;
+  }
+
+  .badge-bestseller {
+    @apply text-xs font-bold bg-white text-dark px-2 py-0.5 rounded;
+  }
+
+  .glow-red {
+    box-shadow: 0 0 20px rgba(215, 25, 32, 0.35);
+  }
+}
+
+@layer utilities {
+  .text-gradient-red {
+    background: linear-gradient(135deg, #D71920, #FF4D54);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bg-gradient-dark {
+    background: linear-gradient(180deg, #0B0B0D 0%, #17191D 100%);
+  }
+
+  .border-gradient {
+    border-image: linear-gradient(135deg, #D71920, transparent) 1;
+  }
+}
