@@ -16,8 +16,8 @@ import { formatPrice } from '@/lib/utils';
 import clsx from 'clsx';
 
 const CATEGORIES: Category[] = [
-  'LED Projector', 'LED Headlight', 'Mini Projector',
-  'Fog Lamp', 'Headlamp', 'Automotive Accessories',
+  'BILED Projector', 'Mini Projector',
+  'Fog Lamp', 'Automotive Accessories',
 ];
 
 type AdminTab = 'overview' | 'products' | 'settings';
@@ -34,7 +34,7 @@ const DEFAULT_SPECS: Record<string, string> = {
 const EMPTY_PRODUCT: Omit<Product, 'id' | 'created_at'> = {
   name: '',
   slug: '',
-  category: 'LED Projector',
+  category: 'BILED Projector',
   description: '',
   specs: { ...DEFAULT_SPECS },
   compatible_vehicles: ['Toyota Avanza', 'Honda Brio', 'Mitsubishi Xpander'],
@@ -742,7 +742,7 @@ export default function AdminDashboard() {
                           }
                         }}
                         className="input-field"
-                        placeholder="Contoh: LED Projector H4 Bi-LED 90W Ultra Vision"
+                        placeholder="Contoh: BILED Projector 2.5 Inch Ultra Vision"
                         required
                       />
                     </div>

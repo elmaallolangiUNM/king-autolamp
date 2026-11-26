@@ -4,8 +4,18 @@
 // Fallback: in-memory dari INITIAL_PRODUCTS jika Redis belum di-setup
 // ============================================================
 
-import { Product } from '@/types';
+import { Product, Category } from '@/types';
 import { PRODUCTS as INITIAL_PRODUCTS } from '@/data/products';
+
+const LEGACY_CATEGORY_MAP: Record<string, Category> = {
+  'LED Projector': 'BILED Projector',
+  'Headlamp': 'BILED Projector',
+  'LED Headlight': 'Automotive Accessories',
+};
+
+function normalizeCategory(category: string): Category {
+  return LEGACY_CATEGORY_MAP[category] ?? (category as Category);
+}
 
 const REDIS_URL = process.env.UPSTASH_REDIS_REST_URL;
 const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -54,7 +64,10 @@ export async function getStoredProducts(): Promise<Product[]> {
     try {
       const parsed = JSON.parse(raw) as Product[];
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+        return parsed.map((p) => ({
+          ...p,
+          category: normalizeCategory(p.category as string),
+        }));
       }
     } catch {
       // JSON corrupt, lanjut ke fallback

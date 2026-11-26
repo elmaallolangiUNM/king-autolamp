@@ -92,7 +92,7 @@ export default function AboutPage() {
               </p>
               <p>
                 Hari ini, KING AUTOLAMP melayani ribuan pelanggan di seluruh Indonesia dengan
-                koleksi lengkap LED Projector, LED Headlight, Mini Projector, Fog Lamp, Headlamp,
+                koleksi lengkap BILED Projector, Mini Projector, Fog Lamp,
                 dan berbagai aksesori pencahayaan otomotif premium lainnya.
               </p>
             </div>

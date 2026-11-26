@@ -12,16 +12,10 @@ import { CartItem, Product } from '@/types';
 
 const CATEGORIES = [
   {
-    name: 'LED Projector',
-    description: 'Projector bi-LED super terang',
+    name: 'BILED Projector',
+    description: 'Projector BILED super terang',
     icon: '💡',
-    href: '/products?category=LED+Projector',
-  },
-  {
-    name: 'LED Headlight',
-    description: 'Headlight LED canbus ready',
-    icon: '🔦',
-    href: '/products?category=LED+Headlight',
+    href: '/products?category=BILED+Projector',
   },
   {
     name: 'Mini Projector',
@@ -34,12 +28,6 @@ const CATEGORIES = [
     description: 'Optimal untuk kabut & hujan',
     icon: '🌫️',
     href: '/products?category=Fog+Lamp',
-  },
-  {
-    name: 'Headlamp',
-    description: 'Projector retrofit premium',
-    icon: '🚗',
-    href: '/products?category=Headlamp',
   },
   {
     name: 'Accessories',
@@ -193,7 +181,7 @@ export default function HomePage() {
           <div className="accent-line mx-auto" />
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {CATEGORIES.map((cat) => (
             <Link
               key={cat.name}
@@ -297,7 +285,7 @@ export default function HomePage() {
                 <span className="text-primary">DISKON UP TO 30%</span>
               </h2>
               <p className="text-silver mb-6">
-                Dapatkan penawaran terbaik untuk produk LED Projector dan Fog Lamp pilihan.
+                Dapatkan penawaran terbaik untuk produk BILED Projector dan Fog Lamp pilihan.
                 Stok terbatas, segera order via WhatsApp!
               </p>
               <Link href="/products" className="btn-primary px-8 py-3.5 glow-red">

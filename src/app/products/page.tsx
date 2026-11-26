@@ -12,11 +12,9 @@ import clsx from 'clsx';
 
 const CATEGORIES: Array<Category | 'All'> = [
   'All',
-  'LED Projector',
-  'LED Headlight',
+  'BILED Projector',
   'Mini Projector',
   'Fog Lamp',
-  'Headlamp',
   'Automotive Accessories',
 ];
 

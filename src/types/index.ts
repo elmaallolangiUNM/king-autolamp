@@ -3,11 +3,9 @@
 // ============================================================
 
 export type Category =
-  | 'LED Projector'
-  | 'LED Headlight'
+  | 'BILED Projector'
   | 'Mini Projector'
   | 'Fog Lamp'
-  | 'Headlamp'
   | 'Automotive Accessories';
 
 export interface ProductVariant {

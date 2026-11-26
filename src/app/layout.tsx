@@ -15,9 +15,8 @@ export const metadata: Metadata = {
   keywords: [
     'KING AUTOLAMP',
     'lampu LED otomotif',
-    'LED projector mobil',
+    'BILED projector mobil',
     'fog lamp LED',
-    'headlamp projector',
     'mini projector LED',
     'toko lampu otomotif',
     'upgrade lampu mobil',

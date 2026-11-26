@@ -12,11 +12,9 @@ const footerLinks = {
     { label: 'Contact', href: '/contact' },
   ],
   Categories: [
-    { label: 'LED Projector', href: '/products?category=LED+Projector' },
-    { label: 'LED Headlight', href: '/products?category=LED+Headlight' },
+    { label: 'BILED Projector', href: '/products?category=BILED+Projector' },
     { label: 'Mini Projector', href: '/products?category=Mini+Projector' },
     { label: 'Fog Lamp', href: '/products?category=Fog+Lamp' },
-    { label: 'Headlamp', href: '/products?category=Headlamp' },
     { label: 'Accessories', href: '/products?category=Automotive+Accessories' },
   ],
 };

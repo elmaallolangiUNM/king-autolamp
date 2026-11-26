@@ -3,11 +3,9 @@ import Image from 'next/image';
 
 // Reuse category data
 const CATEGORY_LIST = [
-  { name: 'LED Projector', href: '/products?category=LED+Projector', image: 'https://images.unsplash.com/photo-1558981852-426c06a93f46?w=600&q=80', desc: 'Proyektor bi-LED super terang untuk visibilitas maksimal' },
-  { name: 'LED Headlight', href: '/products?category=LED+Headlight', image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80', desc: 'Headlight LED canbus ready, plug-and-play' },
+  { name: 'BILED Projector', href: '/products?category=BILED+Projector', image: 'https://images.unsplash.com/photo-1558981852-426c06a93f46?w=600&q=80', desc: 'Proyektor BILED super terang untuk visibilitas maksimal' },
   { name: 'Mini Projector', href: '/products?category=Mini+Projector', image: 'https://images.unsplash.com/photo-1619405399517-d7fce0f13302?w=600&q=80', desc: 'Projector kompak untuk motor dan kendaraan kecil' },
   { name: 'Fog Lamp', href: '/products?category=Fog+Lamp', image: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&q=80', desc: 'Lampu kabut optimal untuk cuaca ekstrem' },
-  { name: 'Headlamp', href: '/products?category=Headlamp', image: 'https://images.unsplash.com/photo-1558981852-426c06a93f46?w=600&q=80', desc: 'Headlamp projector retrofit premium' },
   { name: 'Automotive Accessories', href: '/products?category=Automotive+Accessories', image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80', desc: 'DRL, ballast, strips dan aksesori otomotif' },
 ];
 
@@ -21,7 +19,7 @@ export default function CategoriesPage() {
         <div className="accent-line" />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {CATEGORY_LIST.map((cat) => (
           <Link
             key={cat.name}

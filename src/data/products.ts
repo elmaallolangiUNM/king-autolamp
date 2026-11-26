@@ -8,9 +8,9 @@ import { Product, Testimonial } from '@/types';
 export const PRODUCTS: Product[] = [
   {
     id: 'p001',
-    name: 'LED Projector H4 Bi-LED 90W Ultra Vision',
+    name: 'BILED Projector H4 Bi-LED 90W Ultra Vision',
     slug: 'led-projector-h4-bi-led-90w-ultra-vision',
-    category: 'LED Projector',
+    category: 'BILED Projector',
     description:
       'Projector LED H4 90W dengan teknologi Bi-LED terkini. Cahaya putih terang 6000K memberikan visibilitas maksimal di malam hari. Cocok untuk berbagai jenis kendaraan. Desain kompak dan tahan cuaca.',
     specs: {
@@ -80,7 +80,7 @@ export const PRODUCTS: Product[] = [
     id: 'p003',
     name: 'LED Headlight H11 60W Canbus Ready',
     slug: 'led-headlight-h11-60w-canbus-ready',
-    category: 'LED Headlight',
+    category: 'Automotive Accessories',
     description:
       'Lampu LED H11 60W dengan teknologi Canbus yang mengeliminasi error code pada kendaraan modern. Chip LED CREE terbaru menghasilkan cahaya super terang tanpa flicker.',
     specs: {
@@ -146,9 +146,9 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'p005',
-    name: 'Projector Headlamp Bi-Xenon 3.0" Retrofit Kit',
+    name: 'Projector Bi-Xenon 3.0" Retrofit Kit',
     slug: 'projector-headlamp-bi-xenon-30-retrofit-kit',
-    category: 'Headlamp',
+    category: 'BILED Projector',
     description:
       'Kit retrofit projector Bi-Xenon 3.0 inch kelas premium. Dilengkapi dengan shroud elegan, ballast HID 35W, dan lensa berkualitas tinggi untuk tampilan headlamp yang profesional.',
     specs: {
@@ -214,9 +214,9 @@ export const PRODUCTS: Product[] = [
   },
   {
     id: 'p007',
-    name: 'LED Projector 9005 HB3 100W Extreme Bright',
+    name: 'BILED Projector 9005 HB3 100W Extreme Bright',
     slug: 'led-projector-9005-hb3-100w-extreme-bright',
-    category: 'LED Projector',
+    category: 'BILED Projector',
     description:
       'LED Projector terkuat di kelasnya dengan daya 100W dan output cahaya 10.000LM per pasang. Teknologi heat dissipation terbaru memastikan suhu operasional tetap stabil.',
     specs: {
