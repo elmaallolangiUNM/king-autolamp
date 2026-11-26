@@ -1,5 +1,5 @@
 // ============================================================
-// LUMORA AUTOLIGHTS — Currency Utilities
+// KING AUTOLAMP — Currency Utilities
 // ============================================================
 
 export function formatCurrency(amount: number): string {

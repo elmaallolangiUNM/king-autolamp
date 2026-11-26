@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { ShoppingCart, Menu, X, ShieldCheck } from 'lucide-react';
+import { ShoppingCart, Menu, X } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import clsx from 'clsx';
 
@@ -62,18 +62,8 @@ export default function Navbar() {
             ))}
           </nav>
 
-          {/* Cart + Admin button + hamburger */}
+          {/* Cart + hamburger */}
           <div className="flex items-center gap-2.5">
-            {/* Admin button for easy access */}
-            <Link
-              href="/admin"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-silver hover:text-white bg-dark-200/90 border border-white/10 hover:border-primary/40 rounded-lg transition-all"
-              title="Portal Admin KING AUTOLAMP"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-primary" />
-              <span>Admin</span>
-            </Link>
-
             {/* Shopping Cart */}
             <Link
               href="/cart"
@@ -120,14 +110,6 @@ export default function Navbar() {
           >
             <ShoppingCart className="w-4 h-4" />
             Cart {totalItems > 0 && `(${totalItems})`}
-          </Link>
-          <Link
-            href="/admin"
-            className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-silver hover:text-white border-t border-white/5 mt-1"
-            onClick={() => setMenuOpen(false)}
-          >
-            <ShieldCheck className="w-4 h-4 text-primary" />
-            Admin Dashboard
           </Link>
         </div>
       )}

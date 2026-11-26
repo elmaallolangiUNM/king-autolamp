@@ -1,5 +1,5 @@
 // ============================================================
-// LUMORA AUTOLIGHTS — Sample Product Data
+// KING AUTOLAMP — Sample Product Data
 // Replace with Supabase DB calls in production
 // ============================================================
 

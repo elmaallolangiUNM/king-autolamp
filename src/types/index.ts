@@ -1,5 +1,5 @@
 // ============================================================
-// LUMORA AUTOLIGHTS — Type Definitions
+// KING AUTOLAMP — Type Definitions
 // ============================================================
 
 export type Category =
