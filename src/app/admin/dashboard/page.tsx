@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Package, Plus, Edit2, Trash2, LogOut, Settings,
   TrendingUp, Eye, Star, X, Save, ExternalLink,
   MessageCircle, CheckCircle, AlertCircle, RefreshCw, Car, Tag,
-  Layers, PlusCircle, MinusCircle, ArrowLeft
+  Layers, PlusCircle, MinusCircle, ArrowLeft, Upload
 } from 'lucide-react';
 import { PRODUCTS as INITIAL_PRODUCTS } from '@/data/products';
 import { Product, Category, ProductVariant } from '@/types';
@@ -66,6 +66,7 @@ export default function AdminDashboard() {
   const [newSpecKey, setNewSpecKey] = useState('');
   const [newSpecValue, setNewSpecValue] = useState('');
   const [newImageUrl, setNewImageUrl] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Settings state
   const [waNumber, setWaNumber] = useState('6282298995682');
@@ -270,6 +271,71 @@ export default function AdminDashboard() {
   };
 
   // Image handlers
+  const compressImage = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const objectUrl = URL.createObjectURL(file);
+      const img = new window.Image();
+      img.onload = () => {
+        try {
+          const maxSize = 800;
+          let { width, height } = img;
+          if (width > maxSize || height > maxSize) {
+            if (width > height) {
+              height = Math.round((height * maxSize) / width);
+              width = maxSize;
+            } else {
+              width = Math.round((width * maxSize) / height);
+              height = maxSize;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Canvas context unavailable'));
+            return;
+          }
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.78);
+          resolve(dataUrl);
+        } finally {
+          URL.revokeObjectURL(objectUrl);
+        }
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error('Gagal memuat gambar'));
+      };
+      img.src = objectUrl;
+    });
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !editingProduct) return;
+
+    setUploadingImage(true);
+    try {
+      const uploadedUrls: string[] = [];
+      for (const file of Array.from(files)) {
+        if (!file.type.startsWith('image/')) continue;
+        const compressed = await compressImage(file);
+        uploadedUrls.push(compressed);
+      }
+      if (uploadedUrls.length > 0) {
+        setField('images', [...editingProduct.images, ...uploadedUrls]);
+        showToast(`${uploadedUrls.length} foto berhasil diupload!`);
+      } else {
+        showToast('Pilih file gambar yang valid (JPG/PNG/WebP)', 'error');
+      }
+    } catch {
+      showToast('Gagal memproses foto. Coba file lain.', 'error');
+    } finally {
+      setUploadingImage(false);
+      e.target.value = '';
+    }
+  };
+
   const handleAddImage = () => {
     if (!newImageUrl.trim() || !editingProduct) return;
     setField('images', [...editingProduct.images, newImageUrl.trim()]);
@@ -818,20 +884,45 @@ export default function AdminDashboard() {
                     ))}
                   </div>
 
-                  <div className="flex gap-2 pt-2">
+                  {/* Upload langsung dari Laptop / HP */}
+                  <div className="pt-2 flex flex-col sm:flex-row sm:items-center gap-3">
+                    <label
+                      className={clsx(
+                        'btn-primary text-xs px-4 py-2.5 inline-flex items-center justify-center gap-2 cursor-pointer flex-shrink-0',
+                        uploadingImage && 'opacity-60 pointer-events-none'
+                      )}
+                    >
+                      <Upload className="w-4 h-4" />
+                      {uploadingImage ? 'Memproses foto...' : 'Upload Foto dari Laptop / HP'}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleFileUpload}
+                        disabled={uploadingImage}
+                        className="hidden"
+                      />
+                    </label>
+                    <span className="text-xs text-silver">
+                      Bisa pilih lebih dari 1 foto sekaligus (otomatis dikompres agar ringan)
+                    </span>
+                  </div>
+
+                  {/* Atau tambah lewat URL */}
+                  <div className="flex gap-2 pt-1">
                     <input
                       type="url"
                       value={newImageUrl}
                       onChange={(e) => setNewImageUrl(e.target.value)}
-                      placeholder="https://images.unsplash.com/... atau URL foto produk"
+                      placeholder="Atau paste URL foto (https://...)"
                       className="input-field flex-1 text-xs font-mono"
                     />
                     <button
                       type="button"
                       onClick={handleAddImage}
-                      className="btn-primary text-xs px-4 flex items-center gap-1.5 flex-shrink-0"
+                      className="btn-outline text-xs px-4 flex items-center gap-1.5 flex-shrink-0"
                     >
-                      <Plus className="w-3.5 h-3.5" /> Tambah URL Foto
+                      <Plus className="w-3.5 h-3.5" /> Tambah URL
                     </button>
                   </div>
                 </div>
