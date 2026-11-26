@@ -11,7 +11,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, onAddToCart }: ProductCardProps) {
-  const hasDiscount = product.original_price && product.discount_percent;
+  const hasDiscount = !product.hide_price && product.original_price && product.discount_percent;
 
   return (
     <div className="card group flex flex-col">
@@ -71,14 +71,22 @@ export default function ProductCard({ product, onAddToCart }: ProductCardProps) 
 
         {/* Price */}
         <div className="mb-4">
-          <div className="flex items-baseline gap-2">
-            <span className="text-primary font-bold text-lg">{formatPrice(product.price)}</span>
-            {hasDiscount && (
-              <span className="text-gray-mid text-sm line-through">
-                {formatPrice(product.original_price!)}
+          {product.hide_price ? (
+            <div className="flex items-center">
+              <span className="text-primary font-semibold text-sm">
+                Hubungi Admin untuk Harga
               </span>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="flex items-baseline gap-2">
+              <span className="text-primary font-bold text-lg">{formatPrice(product.price)}</span>
+              {hasDiscount && (
+                <span className="text-gray-mid text-sm line-through">
+                  {formatPrice(product.original_price!)}
+                </span>
+              )}
+            </div>
+          )}
           <p className="text-xs text-gray-mid mt-1">
             Stok:{' '}
             <span className={clsx(product.stock > 5 ? 'text-green-400' : 'text-yellow-400')}>

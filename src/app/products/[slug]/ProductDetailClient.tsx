@@ -45,7 +45,8 @@ export default function ProductDetailClient({ product, related }: ProductDetailC
       product_image: product.images[0],
       variant_id: selectedVariant?.id,
       variant_name: selectedVariant?.name,
-      price,
+      price: product.hide_price ? 0 : price,
+      hide_price: product.hide_price,
       quantity,
     };
     addItem(item);
@@ -66,7 +67,8 @@ export default function ProductDetailClient({ product, related }: ProductDetailC
       product_image: relProduct.images[0],
       variant_id: firstVariant?.id,
       variant_name: firstVariant?.name,
-      price: firstVariant?.price ?? relProduct.price,
+      price: relProduct.hide_price ? 0 : (firstVariant?.price ?? relProduct.price),
+      hide_price: relProduct.hide_price,
       quantity: 1,
     });
   };
@@ -155,11 +157,19 @@ export default function ProductDetailClient({ product, related }: ProductDetailC
 
           {/* Price */}
           <div className="flex items-baseline gap-3 mb-2">
-            <span className="text-primary text-3xl font-bold">{formatPrice(price)}</span>
-            {product.original_price && (
-              <span className="text-gray-mid text-lg line-through">
-                {formatPrice(product.original_price)}
+            {product.hide_price ? (
+              <span className="text-primary text-2xl font-bold">
+                Hubungi Admin untuk Harga
               </span>
+            ) : (
+              <>
+                <span className="text-primary text-3xl font-bold">{formatPrice(price)}</span>
+                {product.original_price && (
+                  <span className="text-gray-mid text-lg line-through">
+                    {formatPrice(product.original_price)}
+                  </span>
+                )}
+              </>
             )}
           </div>
 
@@ -202,7 +212,7 @@ export default function ProductDetailClient({ product, related }: ProductDetailC
                     )}
                   >
                     {v.name}
-                    {v.price !== product.price && (
+                    {!product.hide_price && v.price !== product.price && (
                       <span className="ml-1 text-xs text-gray-mid">
                         (+{formatPrice(v.price - product.price)})
                       </span>
@@ -234,10 +244,12 @@ export default function ProductDetailClient({ product, related }: ProductDetailC
                 <Plus className="w-4 h-4" />
               </button>
             </div>
-            <span className="text-gray-mid text-sm">
-              Subtotal:{' '}
-              <span className="text-primary font-bold">{formatPrice(price * quantity)}</span>
-            </span>
+            {!product.hide_price && (
+              <span className="text-gray-mid text-sm">
+                Subtotal:{' '}
+                <span className="text-primary font-bold">{formatPrice(price * quantity)}</span>
+              </span>
+            )}
           </div>
 
           {/* CTA buttons */}

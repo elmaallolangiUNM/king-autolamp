@@ -14,13 +14,24 @@ function buildWhatsAppMessage(form: CheckoutFormData, cart: ReturnType<typeof us
   const { cart: cartData, totalPrice } = cart;
 
   let items = '';
+  const hasHiddenPrice = cartData.items.some((item) => item.hide_price);
   cartData.items.forEach((item, idx) => {
     items += `${idx + 1}. ${item.product_name}\n`;
     if (item.variant_name) items += `   Varian: ${item.variant_name}\n`;
     items += `   Jumlah: ${item.quantity}\n`;
-    items += `   Harga: ${formatPrice(item.price)}\n`;
-    items += `   Subtotal: ${formatPrice(item.price * item.quantity)}\n\n`;
+    if (item.hide_price) {
+      items += `   Harga: Konfirmasi via Admin\n\n`;
+    } else {
+      items += `   Harga: ${formatPrice(item.price)}\n`;
+      items += `   Subtotal: ${formatPrice(item.price * item.quantity)}\n\n`;
+    }
   });
+
+  const totalText = hasHiddenPrice
+    ? totalPrice > 0
+      ? `${formatPrice(totalPrice)} (+ produk harga konfirmasi)`
+      : 'Konfirmasi via Admin'
+    : formatPrice(totalPrice);
 
   return `Halo Admin KING AUTOLAMP, saya ingin melakukan pemesanan produk.
 
@@ -37,7 +48,7 @@ Kota: ${form.city}${form.notes ? `\nCatatan: ${form.notes}` : ''}
 ━━━━━━━━━━━━━━━━━━━━
 ${items}
 ━━━━━━━━━━━━━━━━━━━━
-💰 TOTAL PEMBELIAN: ${formatPrice(totalPrice)}
+💰 TOTAL PEMBELIAN: ${totalText}
 ━━━━━━━━━━━━━━━━━━━━
 
 Mohon konfirmasi ketersediaan produk dan informasi pembayaran serta pengiriman.
@@ -276,7 +287,7 @@ export default function CheckoutPage() {
                       <div className="flex justify-between mt-1">
                         <span className="text-gray-mid text-xs">×{item.quantity}</span>
                         <span className="text-primary text-xs font-semibold">
-                          {formatPrice(item.price * item.quantity)}
+                          {item.hide_price ? 'Hubungi Admin' : formatPrice(item.price * item.quantity)}
                         </span>
                       </div>
                     </div>
@@ -287,7 +298,13 @@ export default function CheckoutPage() {
               <div className="border-t border-white/10 pt-4 mb-6">
                 <div className="flex justify-between">
                   <span className="text-gray-mid text-sm">Subtotal</span>
-                  <span className="text-white text-sm">{formatPrice(totalPrice)}</span>
+                  <span className="text-white text-sm">
+                    {cartData.items.some((i) => i.hide_price)
+                      ? totalPrice > 0
+                        ? `${formatPrice(totalPrice)} + Konfirmasi`
+                        : 'Konfirmasi Admin'
+                      : formatPrice(totalPrice)}
+                  </span>
                 </div>
                 <div className="flex justify-between mt-2">
                   <span className="text-gray-mid text-sm">Ongkos Kirim</span>
@@ -296,7 +313,11 @@ export default function CheckoutPage() {
                 <div className="flex justify-between items-center mt-3 pt-3 border-t border-white/10">
                   <span className="text-white font-semibold">Total</span>
                   <span className="text-primary font-bold text-xl">
-                    {formatPrice(totalPrice)}
+                    {cartData.items.some((i) => i.hide_price)
+                      ? totalPrice > 0
+                        ? `${formatPrice(totalPrice)}+`
+                        : 'Konfirmasi Admin'
+                      : formatPrice(totalPrice)}
                   </span>
                 </div>
               </div>

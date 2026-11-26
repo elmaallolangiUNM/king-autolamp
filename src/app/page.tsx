@@ -98,7 +98,8 @@ export default function HomePage() {
       product_image: product.images[0],
       variant_id: firstVariant?.id,
       variant_name: firstVariant?.name,
-      price: firstVariant?.price ?? product.price,
+      price: product.hide_price ? 0 : (firstVariant?.price ?? product.price),
+      hide_price: product.hide_price,
       quantity: 1,
     };
     addItem(item);

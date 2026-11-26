@@ -49,6 +49,7 @@ const EMPTY_PRODUCT: Omit<Product, 'id' | 'created_at'> = {
   is_best_seller: false,
   is_new_arrival: true,
   is_active: true,
+  hide_price: false,
 };
 
 export default function AdminDashboard() {
@@ -191,8 +192,8 @@ export default function AdminDashboard() {
       showToast('Nama produk tidak boleh kosong', 'error');
       return;
     }
-    if (!editingProduct.price || editingProduct.price <= 0) {
-      showToast('Harga produk harus lebih dari 0', 'error');
+    if (!editingProduct.hide_price && (!editingProduct.price || editingProduct.price <= 0)) {
+      showToast('Harga produk harus lebih dari 0 (atau centang Sembunyikan Harga)', 'error');
       return;
     }
 
@@ -598,13 +599,21 @@ export default function AdminDashboard() {
                               </span>
                             </td>
                             <td className="py-3.5 px-4">
-                              <div className="font-semibold text-primary text-sm">
-                                {formatPrice(p.price)}
-                              </div>
-                              {p.original_price && (
-                                <div className="text-gray-mid text-xs line-through">
-                                  {formatPrice(p.original_price)}
-                                </div>
+                              {p.hide_price ? (
+                                <span className="text-xs bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 px-2 py-0.5 rounded font-medium">
+                                  Disembunyikan
+                                </span>
+                              ) : (
+                                <>
+                                  <div className="font-semibold text-primary text-sm">
+                                    {formatPrice(p.price)}
+                                  </div>
+                                  {p.original_price && (
+                                    <div className="text-gray-mid text-xs line-through">
+                                      {formatPrice(p.original_price)}
+                                    </div>
+                                  )}
+                                </>
                               )}
                             </td>
                             <td className="py-3.5 px-4">
@@ -1116,6 +1125,16 @@ export default function AdminDashboard() {
                         className="w-4 h-4 accent-primary"
                       />
                       <span className="text-gray-200 text-sm font-medium">Tandai Produk Baru (New Arrival)</span>
+                    </label>
+
+                    <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(editingProduct.hide_price)}
+                        onChange={(e) => setField('hide_price', e.target.checked)}
+                        className="w-4 h-4 accent-primary"
+                      />
+                      <span className="text-gray-200 text-sm font-medium">Sembunyikan Harga (Hubungi Admin)</span>
                     </label>
                   </div>
                 </div>

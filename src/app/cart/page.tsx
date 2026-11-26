@@ -63,7 +63,9 @@ export default function CartPage() {
                 {item.variant_name && (
                   <p className="text-gray-mid text-xs mb-2">Varian: {item.variant_name}</p>
                 )}
-                <p className="text-primary font-bold">{formatPrice(item.price)}</p>
+                <p className="text-primary font-bold">
+                  {item.hide_price ? 'Hubungi Admin' : formatPrice(item.price)}
+                </p>
               </div>
 
               {/* Controls */}
@@ -101,7 +103,7 @@ export default function CartPage() {
                   </div>
 
                   <span className="text-white font-bold text-sm">
-                    {formatPrice(item.price * item.quantity)}
+                    {item.hide_price ? 'Hubungi Admin' : formatPrice(item.price * item.quantity)}
                   </span>
                 </div>
               </div>
@@ -135,7 +137,7 @@ export default function CartPage() {
                     {item.variant_name ? ` (${item.variant_name})` : ''} ×{item.quantity}
                   </span>
                   <span className="text-white flex-shrink-0">
-                    {formatPrice(item.price * item.quantity)}
+                    {item.hide_price ? 'Hubungi Admin' : formatPrice(item.price * item.quantity)}
                   </span>
                 </div>
               ))}
@@ -145,7 +147,11 @@ export default function CartPage() {
               <div className="flex justify-between items-center">
                 <span className="text-white font-semibold">Total Pembayaran</span>
                 <span className="text-primary font-bold text-xl">
-                  {formatPrice(totalPrice)}
+                  {cart.items.some((i) => i.hide_price)
+                    ? totalPrice > 0
+                      ? `${formatPrice(totalPrice)} + Konfirmasi`
+                      : 'Konfirmasi Admin'
+                    : formatPrice(totalPrice)}
                 </span>
               </div>
               <p className="text-gray-mid text-xs mt-1">

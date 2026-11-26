@@ -34,6 +34,7 @@ export interface Product {
   is_best_seller: boolean;
   is_new_arrival: boolean;
   is_active: boolean;
+  hide_price?: boolean;
   created_at: string;
 }
 
@@ -44,6 +45,7 @@ export interface CartItem {
   variant_id?: string;
   variant_name?: string;
   price: number;
+  hide_price?: boolean;
   quantity: number;
 }
 
