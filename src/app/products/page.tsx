@@ -4,18 +4,16 @@ import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
 import { PRODUCTS } from '@/data/products';
-import { Category, FilterState, SortOption } from '@/types';
+import { Category, CategoryItem, FilterState, SortOption } from '@/types';
+import { DEFAULT_CATEGORIES } from '@/lib/categoryService';
 import ProductCard from '@/components/ui/ProductCard';
 import { useCart } from '@/context/CartContext';
 import { CartItem, Product } from '@/types';
 import clsx from 'clsx';
 
-const CATEGORIES: Array<Category | 'All'> = [
+const DEFAULT_CATEGORY_NAMES: Array<Category | 'All'> = [
   'All',
-  'BILED Projector',
-  'Mini Projector',
-  'Fog Lamp',
-  'Automotive Accessories',
+  ...DEFAULT_CATEGORIES.map((c) => c.name),
 ];
 
 const SORT_OPTIONS: Array<{ value: SortOption; label: string }> = [
@@ -31,6 +29,7 @@ function ProductsContent() {
   const searchParams = useSearchParams();
   const { addItem } = useCart();
   const [allProducts, setAllProducts] = useState<Product[]>(PRODUCTS);
+  const [categoryOptions, setCategoryOptions] = useState<Array<Category | 'All'>>(DEFAULT_CATEGORY_NAMES);
 
   useEffect(() => {
     fetch('/api/products', { cache: 'no-store' })
@@ -44,6 +43,15 @@ function ProductsContent() {
         }
       })
       .catch((err) => console.warn('Using static products fallback:', err));
+
+    fetch('/api/categories', { cache: 'no-store' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.categories && Array.isArray(data.categories)) {
+          setCategoryOptions(['All', ...(data.categories as CategoryItem[]).map((c) => c.name)]);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const [filters, setFilters] = useState<FilterState>({
@@ -199,7 +207,7 @@ function ProductsContent() {
               Kategori
             </h3>
             <div className="space-y-2">
-              {CATEGORIES.map((cat) => (
+              {categoryOptions.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => {

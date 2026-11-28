@@ -1,15 +1,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { getStoredCategories } from '@/lib/categoryService';
 
-// Reuse category data
-const CATEGORY_LIST = [
-  { name: 'BILED Projector', href: '/products?category=BILED+Projector', image: 'https://images.unsplash.com/photo-1558981852-426c06a93f46?w=600&q=80', desc: 'Proyektor BILED super terang untuk visibilitas maksimal' },
-  { name: 'Mini Projector', href: '/products?category=Mini+Projector', image: 'https://images.unsplash.com/photo-1619405399517-d7fce0f13302?w=600&q=80', desc: 'Projector kompak untuk motor dan kendaraan kecil' },
-  { name: 'Fog Lamp', href: '/products?category=Fog+Lamp', image: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&q=80', desc: 'Lampu kabut optimal untuk cuaca ekstrem' },
-  { name: 'Automotive Accessories', href: '/products?category=Automotive+Accessories', image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&q=80', desc: 'DRL, ballast, strips dan aksesori otomotif' },
-];
+export const dynamic = 'force-dynamic';
 
-export default function CategoriesPage() {
+export default async function CategoriesPage() {
+  const categories = await getStoredCategories();
+
   return (
     <div className="pt-20 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="py-10">
@@ -20,17 +17,18 @@ export default function CategoriesPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {CATEGORY_LIST.map((cat) => (
+        {categories.map((cat) => (
           <Link
-            key={cat.name}
-            href={cat.href}
+            key={cat.id}
+            href={`/products?category=${encodeURIComponent(cat.name)}`}
             className="card group overflow-hidden hover:scale-[1.02] transition-transform duration-300"
           >
             <div className="relative h-48 bg-dark-300">
               <Image
-                src={cat.image}
+                src={cat.image || 'https://images.unsplash.com/photo-1558981852-426c06a93f46?w=600&q=80'}
                 alt={cat.name}
                 fill
+                unoptimized={cat.image?.startsWith('data:')}
                 className="object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-300 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/60 to-transparent" />
@@ -38,7 +36,7 @@ export default function CategoriesPage() {
                 <h2 className="text-white font-bold text-xl group-hover:text-primary transition-colors">
                   {cat.name}
                 </h2>
-                <p className="text-gray-300 text-sm mt-1">{cat.desc}</p>
+                <p className="text-gray-300 text-sm mt-1">{cat.description}</p>
               </div>
             </div>
             <div className="p-4 flex items-center justify-between">

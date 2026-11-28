@@ -8,34 +8,8 @@ import { PRODUCTS, TESTIMONIALS } from '@/data/products';
 import ProductCard from '@/components/ui/ProductCard';
 import StarRating from '@/components/ui/StarRating';
 import { useCart } from '@/context/CartContext';
-import { CartItem, Product } from '@/types';
-
-const CATEGORIES = [
-  {
-    name: 'BILED Projector',
-    description: 'Projector BILED super terang',
-    icon: '💡',
-    href: '/products?category=BILED+Projector',
-  },
-  {
-    name: 'Mini Projector',
-    description: 'Kompak, terang & tahan lama',
-    icon: '🎯',
-    href: '/products?category=Mini+Projector',
-  },
-  {
-    name: 'Fog Lamp',
-    description: 'Optimal untuk kabut & hujan',
-    icon: '🌫️',
-    href: '/products?category=Fog+Lamp',
-  },
-  {
-    name: 'Accessories',
-    description: 'DRL, ballast & aksesoris',
-    icon: '⚙️',
-    href: '/products?category=Automotive+Accessories',
-  },
-];
+import { CartItem, CategoryItem, Product } from '@/types';
+import { DEFAULT_CATEGORIES } from '@/lib/categoryService';
 
 const WHY_US = [
   {
@@ -63,6 +37,7 @@ const WHY_US = [
 export default function HomePage() {
   const { addItem } = useCart();
   const [products, setProducts] = useState<Product[]>(PRODUCTS);
+  const [categories, setCategories] = useState<CategoryItem[]>(DEFAULT_CATEGORIES);
 
   useEffect(() => {
     fetch('/api/products', { cache: 'no-store' })
@@ -76,6 +51,15 @@ export default function HomePage() {
         }
       })
       .catch((err) => console.warn('Using static products fallback:', err));
+
+    fetch('/api/categories', { cache: 'no-store' })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.categories && Array.isArray(data.categories)) {
+          setCategories(data.categories);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const handleAddToCart = (product: Product) => {
@@ -182,13 +166,13 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <Link
-              key={cat.name}
-              href={cat.href}
+              key={cat.id}
+              href={`/products?category=${encodeURIComponent(cat.name)}`}
               className="bg-dark-200 border border-white/10 hover:border-primary/60 rounded-xl p-5 text-center hover:-translate-y-1 transition-all duration-300 group"
             >
-              <div className="text-3xl mb-3">{cat.icon}</div>
+              <div className="text-3xl mb-3">{cat.icon || '💡'}</div>
               <h3 className="text-white text-sm font-semibold mb-1 group-hover:text-primary transition-colors">
                 {cat.name}
               </h3>

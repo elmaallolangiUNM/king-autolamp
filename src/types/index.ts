@@ -2,11 +2,15 @@
 // KING AUTOLAMP — Type Definitions
 // ============================================================
 
-export type Category =
-  | 'BILED Projector'
-  | 'Mini Projector'
-  | 'Fog Lamp'
-  | 'Automotive Accessories';
+export type Category = string;
+
+export interface CategoryItem {
+  id: string;
+  name: string;
+  description: string;
+  image: string;
+  icon?: string;
+}
 
 export interface ProductVariant {
   id: string;

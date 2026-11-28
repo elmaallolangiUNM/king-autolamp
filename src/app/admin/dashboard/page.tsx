@@ -11,16 +11,19 @@ import {
   Layers, PlusCircle, MinusCircle, ArrowLeft, Upload
 } from 'lucide-react';
 import { PRODUCTS as INITIAL_PRODUCTS } from '@/data/products';
-import { Product, Category, ProductVariant } from '@/types';
+import { DEFAULT_CATEGORIES } from '@/lib/categoryService';
+import { Product, Category, CategoryItem, ProductVariant } from '@/types';
 import { formatPrice } from '@/lib/utils';
 import clsx from 'clsx';
 
-const CATEGORIES: Category[] = [
-  'BILED Projector', 'Mini Projector',
-  'Fog Lamp', 'Automotive Accessories',
-];
+type AdminTab = 'overview' | 'products' | 'categories' | 'settings';
 
-type AdminTab = 'overview' | 'products' | 'settings';
+const EMPTY_CATEGORY: Omit<CategoryItem, 'id'> = {
+  name: '',
+  description: '',
+  image: 'https://images.unsplash.com/photo-1558981852-426c06a93f46?w=600&q=80',
+  icon: '💡',
+};
 
 const DEFAULT_SPECS: Record<string, string> = {
   'Daya': '90W (45W × 2)',
@@ -69,6 +72,13 @@ export default function AdminDashboard() {
   const [newImageUrl, setNewImageUrl] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
 
+  // Categories state
+  const [categories, setCategories] = useState<CategoryItem[]>(DEFAULT_CATEGORIES);
+  const [editingCategory, setEditingCategory] = useState<CategoryItem | null>(null);
+  const [isNewCategory, setIsNewCategory] = useState(false);
+  const [savingCategory, setSavingCategory] = useState(false);
+  const [uploadingCategoryImage, setUploadingCategoryImage] = useState(false);
+
   // Settings state
   const [waNumber, setWaNumber] = useState('6282298995682');
   const [storeName, setStoreName] = useState('KING AUTOLAMP');
@@ -100,8 +110,23 @@ export default function AdminDashboard() {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('/api/categories', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.categories && Array.isArray(data.categories)) {
+          setCategories(data.categories);
+        }
+      }
+    } catch (err) {
+      console.warn('Category API error, using default fallback:', err);
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
+    fetchCategories();
   }, []);
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
@@ -382,6 +407,106 @@ export default function AdminDashboard() {
     setField('variants', updatedVariants);
   };
 
+  // Category handlers
+  const handleNewCategory = () => {
+    setEditingCategory({
+      id: `cat_${Date.now()}`,
+      ...EMPTY_CATEGORY,
+    });
+    setIsNewCategory(true);
+  };
+
+  const handleEditCategory = (cat: CategoryItem) => {
+    setEditingCategory({ ...cat });
+    setIsNewCategory(false);
+  };
+
+  const handleSaveCategory = async () => {
+    if (!editingCategory) return;
+    if (!editingCategory.name.trim()) {
+      showToast('Nama kategori tidak boleh kosong', 'error');
+      return;
+    }
+
+    setSavingCategory(true);
+    try {
+      const url = isNewCategory
+        ? '/api/categories'
+        : `/api/categories/${editingCategory.id}`;
+      const method = isNewCategory ? 'POST' : 'PUT';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingCategory),
+      });
+
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        showToast(data?.error || 'Gagal menyimpan kategori', 'error');
+        return;
+      }
+
+      if (data?.categories && Array.isArray(data.categories)) {
+        setCategories(data.categories);
+      } else {
+        setCategories((prev) => {
+          const idx = prev.findIndex((c) => c.id === editingCategory.id);
+          if (idx >= 0) return prev.map((c) => (c.id === editingCategory.id ? editingCategory : c));
+          return [...prev, editingCategory];
+        });
+      }
+
+      showToast(isNewCategory ? 'Kategori baru berhasil ditambahkan!' : 'Perubahan kategori berhasil disimpan!');
+      setEditingCategory(null);
+    } catch {
+      showToast('Terjadi kesalahan saat menyimpan kategori', 'error');
+    } finally {
+      setSavingCategory(false);
+    }
+  };
+
+  const handleDeleteCategory = async (id: string) => {
+    if (!confirm('Yakin ingin menghapus kategori ini?')) return;
+    try {
+      const res = await fetch(`/api/categories/${id}`, { method: 'DELETE' });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        showToast(data?.error || 'Gagal menghapus kategori', 'error');
+        return;
+      }
+      if (data?.categories) {
+        setCategories(data.categories);
+      } else {
+        setCategories((prev) => prev.filter((c) => c.id !== id));
+      }
+      showToast('Kategori berhasil dihapus');
+    } catch {
+      showToast('Terjadi kesalahan saat menghapus kategori', 'error');
+    }
+  };
+
+  const handleCategoryImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editingCategory) return;
+    if (!file.type.startsWith('image/')) {
+      showToast('Pilih file gambar yang valid (JPG/PNG/WebP)', 'error');
+      return;
+    }
+
+    setUploadingCategoryImage(true);
+    try {
+      const compressed = await compressImage(file);
+      setEditingCategory({ ...editingCategory, image: compressed });
+      showToast('Gambar kategori berhasil diupload!');
+    } catch {
+      showToast('Gagal memproses foto. Coba file lain.', 'error');
+    } finally {
+      setUploadingCategoryImage(false);
+      e.target.value = '';
+    }
+  };
+
   const totalActive = products.filter((p) => p.is_active).length;
   const totalBestSeller = products.filter((p) => p.is_best_seller).length;
   const totalNewArrivals = products.filter((p) => p.is_new_arrival).length;
@@ -432,6 +557,7 @@ export default function AdminDashboard() {
         <nav className="flex-1 p-4 space-y-1">
           {[
             { key: 'products', icon: Package, label: 'Kelola Produk' },
+            { key: 'categories', icon: Tag, label: 'Kelola Kategori' },
             { key: 'overview', icon: LayoutDashboard, label: 'Ringkasan & Statistik' },
             { key: 'settings', icon: Settings, label: 'Pengaturan Toko' },
           ].map((item) => (
@@ -440,10 +566,11 @@ export default function AdminDashboard() {
               onClick={() => {
                 setTab(item.key as AdminTab);
                 setEditingProduct(null);
+                setEditingCategory(null);
               }}
               className={clsx(
                 'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm transition-all',
-                tab === item.key && !editingProduct
+                tab === item.key && !editingProduct && !editingCategory
                   ? 'bg-primary text-white font-semibold shadow-md shadow-primary/20'
                   : 'text-gray-mid hover:text-white hover:bg-dark-300'
               )}
@@ -490,16 +617,25 @@ export default function AdminDashboard() {
                 ? isNewProduct
                   ? 'Tambah Produk Baru'
                   : `Edit Produk: ${editingProduct.name}`
+                : editingCategory
+                ? isNewCategory
+                  ? 'Tambah Kategori Baru'
+                  : `Edit Kategori: ${editingCategory.name}`
                 : tab === 'overview'
                 ? 'Dashboard Overview'
                 : tab === 'products'
                 ? 'Kelola Produk & Katalog'
+                : tab === 'categories'
+                ? 'Kelola Kategori'
                 : 'Pengaturan Toko'}
             </h1>
           </div>
           <div className="flex items-center gap-3">
             <button
-              onClick={fetchProducts}
+              onClick={() => {
+                fetchProducts();
+                fetchCategories();
+              }}
               disabled={loading}
               className="p-2 rounded-lg text-silver hover:text-white hover:bg-dark-300 transition-colors"
               title="Refresh Data"
@@ -771,7 +907,7 @@ export default function AdminDashboard() {
                         onChange={(e) => setField('category', e.target.value as Category)}
                         className="input-field cursor-pointer"
                       >
-                        {CATEGORIES.map((c) => (
+                        {Array.from(new Set([...categories.map((c) => c.name), editingProduct.category].filter(Boolean))).map((c) => (
                           <option key={c} value={c} className="bg-dark-300">
                             {c}
                           </option>
@@ -1160,6 +1296,199 @@ export default function AdminDashboard() {
                   <button
                     onClick={() => setEditingProduct(null)}
                     disabled={saving}
+                    className="btn-ghost px-6 py-3 text-sm text-silver hover:text-white"
+                  >
+                    Batal
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ==================== CATEGORIES LIST ==================== */}
+          {tab === 'categories' && !editingCategory && (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-white font-bold text-xl">Daftar Kategori ({categories.length})</h2>
+                  <p className="text-gray-mid text-sm mt-0.5">
+                    Ubah nama, deskripsi, gambar, atau tambah kategori baru untuk halaman Categories
+                  </p>
+                </div>
+                <button
+                  onClick={handleNewCategory}
+                  className="btn-primary flex items-center gap-2 text-sm px-5 py-2.5 self-start sm:self-auto"
+                >
+                  <Plus className="w-4 h-4" /> Tambah Kategori Baru
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {categories.map((cat) => {
+                  const productCount = products.filter((p) => p.category === cat.name).length;
+                  return (
+                    <div
+                      key={cat.id}
+                      className="bg-dark-200 border border-white/10 rounded-2xl overflow-hidden shadow-lg flex flex-col"
+                    >
+                      <div className="relative h-44 bg-dark-300">
+                        <Image
+                          src={cat.image || 'https://images.unsplash.com/photo-1558981852-426c06a93f46?w=600&q=80'}
+                          alt={cat.name}
+                          fill
+                          unoptimized={cat.image?.startsWith('data:')}
+                          className="object-cover opacity-75"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/50 to-transparent" />
+                        <div className="absolute top-3 right-3 flex items-center gap-2">
+                          <span className="bg-dark/80 backdrop-blur text-gray-200 text-xs px-2.5 py-1 rounded-full border border-white/10">
+                            {productCount} Produk
+                          </span>
+                        </div>
+                        <div className="absolute bottom-0 left-0 right-0 p-4">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xl">{cat.icon || '💡'}</span>
+                            <h3 className="text-white font-bold text-lg">{cat.name}</h3>
+                          </div>
+                          <p className="text-gray-300 text-xs mt-1 line-clamp-2">{cat.description}</p>
+                        </div>
+                      </div>
+                      <div className="p-4 flex items-center justify-end gap-2 border-t border-white/5">
+                        <button
+                          onClick={() => handleEditCategory(cat)}
+                          className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium bg-dark-300 text-gray-200 hover:text-white hover:bg-white/10 transition-colors"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" /> Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCategory(cat.id)}
+                          className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium bg-red-950/50 text-red-300 hover:bg-red-900/60 transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" /> Hapus
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ==================== ADD / EDIT CATEGORY FORM ==================== */}
+          {tab === 'categories' && editingCategory && (
+            <div className="max-w-2xl mx-auto">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setEditingCategory(null)}
+                    className="p-2 rounded-lg text-silver hover:text-white hover:bg-dark-200 transition-colors"
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                  </button>
+                  <div>
+                    <h2 className="text-white font-bold text-xl">
+                      {isNewCategory ? 'Tambah Kategori Baru' : 'Edit Kategori'}
+                    </h2>
+                    <p className="text-silver text-xs mt-0.5">
+                      Perubahan akan langsung tampil di halaman Categories, Beranda, dan Filter Produk
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setEditingCategory(null)}
+                  className="text-silver hover:text-white p-2 rounded-lg hover:bg-dark-200"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="bg-dark-200 border border-white/10 rounded-2xl p-6 space-y-5">
+                <div>
+                  <label className="text-sm font-medium text-gray-200 mb-1.5 block">
+                    Nama Kategori <span className="text-primary">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={editingCategory.name}
+                    onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value })}
+                    className="input-field"
+                    placeholder="Contoh: BILED Projector"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-200 mb-1.5 block">
+                    Deskripsi Singkat
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={editingCategory.description}
+                    onChange={(e) => setEditingCategory({ ...editingCategory, description: e.target.value })}
+                    className="input-field resize-none"
+                    placeholder="Contoh: Proyektor BILED super terang untuk visibilitas maksimal"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-200 mb-1.5 block">
+                    Ikon Emoji (tampil di Beranda)
+                  </label>
+                  <input
+                    type="text"
+                    value={editingCategory.icon || ''}
+                    onChange={(e) => setEditingCategory({ ...editingCategory, icon: e.target.value })}
+                    className="input-field w-32 text-center text-lg"
+                    placeholder="💡"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-200 mb-2 block">
+                    Gambar Banner Kategori
+                  </label>
+                  <div className="relative h-44 rounded-xl overflow-hidden bg-dark-300 border border-white/10 mb-3">
+                    <Image
+                      src={editingCategory.image || 'https://images.unsplash.com/photo-1558981852-426c06a93f46?w=600&q=80'}
+                      alt={editingCategory.name || 'Preview Kategori'}
+                      fill
+                      unoptimized={editingCategory.image?.startsWith('data:')}
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <input
+                      type="url"
+                      value={editingCategory.image}
+                      onChange={(e) => setEditingCategory({ ...editingCategory, image: e.target.value })}
+                      className="input-field flex-1 text-xs"
+                      placeholder="https://... (URL gambar)"
+                    />
+                    <label className="btn-secondary flex items-center justify-center gap-2 text-xs px-4 py-2.5 cursor-pointer flex-shrink-0">
+                      <Upload className="w-4 h-4" />
+                      {uploadingCategoryImage ? 'Mengupload...' : 'Upload Foto'}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleCategoryImageUpload}
+                        disabled={uploadingCategoryImage}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 pt-4 border-t border-white/5">
+                  <button
+                    onClick={handleSaveCategory}
+                    disabled={savingCategory}
+                    className="btn-primary flex items-center gap-2 text-sm px-6 py-3"
+                  >
+                    <Save className="w-4 h-4" />
+                    {savingCategory ? 'Menyimpan...' : 'Simpan Kategori'}
+                  </button>
+                  <button
+                    onClick={() => setEditingCategory(null)}
+                    disabled={savingCategory}
                     className="btn-ghost px-6 py-3 text-sm text-silver hover:text-white"
                   >
                     Batal
