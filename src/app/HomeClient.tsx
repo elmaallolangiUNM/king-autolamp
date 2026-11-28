@@ -2,7 +2,52 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, ChevronRight, Shield, Package, MessageCircle, Wrench, Zap, TrendingUp } from 'lucide-react';
+import { ArrowRight, ChevronRight, Shield, Package, MessageCircle, Wrench, Zap, Camera } from 'lucide-react';
+
+const RECENT_PROJECTS = [
+  {
+    id: 'proj1',
+    title: 'Toyota Avanza — BILED Projector H4 90W',
+    category: 'BILED Projector',
+    desc: 'Pemasangan BILED Projector H4 Ultra Vision 90W dengan hasil cahaya 6000K super terang.',
+    image: 'https://images.unsplash.com/photo-1558981852-426c06a93f46?w=900&q=85',
+  },
+  {
+    id: 'proj2',
+    title: 'Honda Vario — Mini Projector 2.5" Hi-Lo',
+    category: 'Mini Projector',
+    desc: 'Upgrade Mini Projector 2.5 inch Hi-Lo Beam pada motor sport, tampil lebih elegan dan terang.',
+    image: 'https://images.unsplash.com/photo-1619405399517-d7fce0f13302?w=900&q=85',
+  },
+  {
+    id: 'proj3',
+    title: 'Mitsubishi Pajero — Fog Lamp LED H3 DRL',
+    category: 'Fog Lamp',
+    desc: 'Instalasi Fog Lamp LED H3 DRL Angel Eye pada SUV, optimal untuk perjalanan malam dan kabut.',
+    image: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=900&q=85',
+  },
+  {
+    id: 'proj4',
+    title: 'Toyota Innova — LED Headlight H11 Canbus',
+    category: 'Automotive Accessories',
+    desc: 'Penggantian headlight H11 60W Canbus Ready, bebas error code pada sistem canbus kendaraan.',
+    image: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=900&q=85',
+  },
+  {
+    id: 'proj5',
+    title: 'Suzuki GSX — Mini Projector 3.0" Full LED',
+    category: 'Mini Projector',
+    desc: 'Custom projector 3.0 inch full LED pada motor sport dengan hasil cahaya fokus dan tajam.',
+    image: 'https://images.unsplash.com/photo-1558981359-219d6364c9c8?w=900&q=85',
+  },
+  {
+    id: 'proj6',
+    title: 'Daihatsu Xenia — BILED Retrofit Complete',
+    category: 'BILED Projector',
+    desc: 'Retrofit lengkap dengan BILED Projector, shroud custom, dan angel eye DRL.',
+    image: 'https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=900&q=85',
+  },
+];
 import { TESTIMONIALS } from '@/data/products';
 import ProductCard from '@/components/ui/ProductCard';
 import StarRating from '@/components/ui/StarRating';
@@ -220,42 +265,162 @@ export default function HomeClient({
         </div>
       </section>
 
-      {/* ==================== PROMO BANNER ==================== */}
-      <section className="py-8 px-4 sm:px-6 lg:px-8">
+      {/* ==================== OUR RECENT PROJECTS ==================== */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-dark overflow-hidden">
         <div className="max-w-7xl mx-auto">
-          <div className="relative bg-dark-200 border border-white/10 rounded-2xl overflow-hidden p-10 md:p-16">
-            {/* Subtle red accent bar on left */}
-            <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-primary" />
-            <div className="absolute right-0 top-0 bottom-0 w-1/2 hidden md:block">
-              <Image
-                src="https://images.unsplash.com/photo-1619405399517-d7fce0f13302?w=800&q=80"
-                alt="Promo KING AUTOLAMP"
-                fill
-                className="object-cover opacity-30"
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-dark-200 via-dark-200/70 to-transparent" />
-            </div>
-
-            <div className="relative z-10 max-w-lg">
+          {/* Section Header */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-14 gap-6">
+            <div>
               <div className="flex items-center gap-2 mb-3">
-                <TrendingUp className="w-4 h-4 text-primary" />
-                <span className="text-silver-light text-xs font-semibold tracking-widest uppercase">
-                  Penawaran Spesial · KING AUTOLAMP
+                <Camera className="w-4 h-4 text-primary" />
+                <span className="text-primary text-xs font-semibold tracking-widest uppercase">
+                  Portfolio Pemasangan
                 </span>
               </div>
-              <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-3">
-                POWER YOUR VISION
+              <h2 className="font-display text-4xl md:text-5xl font-bold text-white leading-tight">
+                Our Recent
                 <br />
-                <span className="text-primary">DISKON UP TO 30%</span>
+                <span className="text-gradient-red">Projects</span>
               </h2>
-              <p className="text-silver mb-6">
-                Dapatkan penawaran terbaik untuk produk BILED Projector dan Fog Lamp pilihan.
-                Stok terbatas, segera order via WhatsApp!
+              <p className="text-silver text-sm mt-3 max-w-md leading-relaxed">
+                Setiap kendaraan mendapat sentuhan terbaik — dari pemilihan produk hingga hasil instalasi yang presisi dan memuaskan.
               </p>
-              <Link href="/products" className="btn-primary px-8 py-3.5 glow-red">
-                Belanja Sekarang <ArrowRight className="w-4 h-4" />
-              </Link>
+              <div className="accent-line mt-5" />
             </div>
+            <Link
+              href="/products"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-silver-light hover:text-primary transition-colors self-start md:self-end pb-1"
+            >
+              Lihat Semua Produk <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* Cinematic Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 auto-rows-[260px]">
+            {/* Large featured card — col 1-7, row 1 */}
+            {RECENT_PROJECTS[0] && (
+              <div className="md:col-span-7 md:row-span-2 group relative rounded-2xl overflow-hidden bg-dark-300 cursor-pointer">
+                <Image
+                  src={RECENT_PROJECTS[0].image}
+                  alt={RECENT_PROJECTS[0].title}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105 opacity-70 group-hover:opacity-90"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/60 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-dark/40 to-transparent" />
+                {/* Category Badge */}
+                <div className="absolute top-5 left-5">
+                  <span className="bg-primary/90 backdrop-blur text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1.5 rounded-full">
+                    {RECENT_PROJECTS[0].category}
+                  </span>
+                </div>
+                {/* Content */}
+                <div className="absolute bottom-0 left-0 right-0 p-7">
+                  <h3 className="text-white font-bold text-2xl leading-tight mb-2 group-hover:text-primary transition-colors">
+                    {RECENT_PROJECTS[0].title}
+                  </h3>
+                  <p className="text-gray-300 text-sm leading-relaxed max-w-sm">
+                    {RECENT_PROJECTS[0].desc}
+                  </p>
+                  <div className="mt-4 flex items-center gap-2 text-primary text-xs font-semibold opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                    <span>Lihat Detail</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Top-right card — col 8-12, row 1 */}
+            {RECENT_PROJECTS[1] && (
+              <div className="md:col-span-5 group relative rounded-2xl overflow-hidden bg-dark-300 cursor-pointer">
+                <Image
+                  src={RECENT_PROJECTS[1].image}
+                  alt={RECENT_PROJECTS[1].title}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105 opacity-65 group-hover:opacity-85"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/50 to-transparent" />
+                <div className="absolute top-4 left-4">
+                  <span className="bg-dark/70 backdrop-blur border border-white/20 text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full">
+                    {RECENT_PROJECTS[1].category}
+                  </span>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-5">
+                  <h3 className="text-white font-bold text-lg leading-tight group-hover:text-primary transition-colors">
+                    {RECENT_PROJECTS[1].title}
+                  </h3>
+                  <p className="text-gray-400 text-xs mt-1.5 leading-relaxed line-clamp-2">
+                    {RECENT_PROJECTS[1].desc}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Bottom-right card — col 8-12, row 2 */}
+            {RECENT_PROJECTS[2] && (
+              <div className="md:col-span-5 group relative rounded-2xl overflow-hidden bg-dark-300 cursor-pointer">
+                <Image
+                  src={RECENT_PROJECTS[2].image}
+                  alt={RECENT_PROJECTS[2].title}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105 opacity-65 group-hover:opacity-85"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/50 to-transparent" />
+                <div className="absolute top-4 left-4">
+                  <span className="bg-dark/70 backdrop-blur border border-white/20 text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full">
+                    {RECENT_PROJECTS[2].category}
+                  </span>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-5">
+                  <h3 className="text-white font-bold text-lg leading-tight group-hover:text-primary transition-colors">
+                    {RECENT_PROJECTS[2].title}
+                  </h3>
+                  <p className="text-gray-400 text-xs mt-1.5 leading-relaxed line-clamp-2">
+                    {RECENT_PROJECTS[2].desc}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Bottom row — 3 equal cards */}
+            {RECENT_PROJECTS.slice(3, 6).map((proj) => (
+              <div key={proj.id} className="md:col-span-4 group relative rounded-2xl overflow-hidden bg-dark-300 cursor-pointer">
+                <Image
+                  src={proj.image}
+                  alt={proj.title}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105 opacity-60 group-hover:opacity-80"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/55 to-transparent" />
+                <div className="absolute top-4 left-4">
+                  <span className="bg-dark/70 backdrop-blur border border-white/20 text-white text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full">
+                    {proj.category}
+                  </span>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-5">
+                  <h3 className="text-white font-bold text-base leading-tight group-hover:text-primary transition-colors line-clamp-2">
+                    {proj.title}
+                  </h3>
+                  <p className="text-gray-400 text-xs mt-1 leading-relaxed line-clamp-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    {proj.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Stats strip */}
+          <div className="mt-10 grid grid-cols-3 gap-4 border border-white/5 rounded-2xl bg-dark-200 p-6">
+            {[
+              { value: '500+', label: 'Unit Terpasang' },
+              { value: '4 Kota', label: 'Area Layanan' },
+              { value: '100%', label: 'Kepuasan Pelanggan' },
+            ].map((s) => (
+              <div key={s.label} className="text-center">
+                <div className="text-2xl md:text-3xl font-bold text-white font-display">{s.value}</div>
+                <div className="text-silver text-xs mt-1">{s.label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
