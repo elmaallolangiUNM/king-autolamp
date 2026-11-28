@@ -124,8 +124,8 @@ export default function ContactPage() {
                       (NEXT_PUBLIC_GOOGLE_MAPS_EMBED_URL)
                     </p>
                   </div>
-                  <a
-                    href={`https://maps.google.com?q=${encodeURIComponent(storeConfig.store_address)}`}
+                <a
+                    href="https://maps.app.goo.gl/8CRAoimUK1a7dbuy8"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn-outline text-sm"

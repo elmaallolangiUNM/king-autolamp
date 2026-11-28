@@ -95,7 +95,14 @@ export default function Footer() {
             <ul className="space-y-3">
               <li className="flex gap-3">
                 <MapPin className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                <span className="text-silver text-sm">{storeConfig.store_address}</span>
+                <a
+                  href="https://maps.app.goo.gl/8CRAoimUK1a7dbuy8"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-silver text-sm hover:text-primary transition-colors"
+                >
+                  {storeConfig.store_address}
+                </a>
               </li>
               <li className="flex gap-3">
                 <MessageCircle className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />

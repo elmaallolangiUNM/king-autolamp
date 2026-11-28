@@ -8,15 +8,16 @@ import {
   LayoutDashboard, Package, Plus, Edit2, Trash2, LogOut, Settings,
   TrendingUp, Eye, Star, X, Save, ExternalLink,
   MessageCircle, CheckCircle, AlertCircle, RefreshCw, Car, Tag,
-  Layers, PlusCircle, MinusCircle, ArrowLeft, Upload
+  Layers, PlusCircle, MinusCircle, ArrowLeft, Upload, Camera, Play, Video
 } from 'lucide-react';
 import { PRODUCTS as INITIAL_PRODUCTS } from '@/data/products';
 import { DEFAULT_CATEGORIES } from '@/lib/categoryService';
-import { Product, Category, CategoryItem, ProductVariant } from '@/types';
+import { DEFAULT_PROJECTS } from '@/lib/projectService';
+import { Product, Category, CategoryItem, ProductVariant, ProjectItem } from '@/types';
 import { formatPrice } from '@/lib/utils';
 import clsx from 'clsx';
 
-type AdminTab = 'overview' | 'products' | 'categories' | 'settings';
+type AdminTab = 'overview' | 'products' | 'categories' | 'projects' | 'settings';
 
 const EMPTY_CATEGORY: Omit<CategoryItem, 'id'> = {
   name: '',
@@ -79,6 +80,13 @@ export default function AdminDashboard() {
   const [savingCategory, setSavingCategory] = useState(false);
   const [uploadingCategoryImage, setUploadingCategoryImage] = useState(false);
 
+  // Projects state
+  const [projects, setProjects] = useState<ProjectItem[]>(DEFAULT_PROJECTS);
+  const [editingProject, setEditingProject] = useState<ProjectItem | null>(null);
+  const [isNewProject, setIsNewProject] = useState(false);
+  const [savingProject, setSavingProject] = useState(false);
+  const [uploadingProjectImage, setUploadingProjectImage] = useState(false);
+
   // Settings state
   const [waNumber, setWaNumber] = useState('6282298995682');
   const [storeName, setStoreName] = useState('KING AUTOLAMP');
@@ -124,9 +132,24 @@ export default function AdminDashboard() {
     }
   };
 
+  const fetchProjects = async () => {
+    try {
+      const res = await fetch('/api/projects', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.projects && Array.isArray(data.projects)) {
+          setProjects(data.projects);
+        }
+      }
+    } catch (err) {
+      console.warn('Project API error, using default fallback:', err);
+    }
+  };
+
   useEffect(() => {
     fetchProducts();
     fetchCategories();
+    fetchProjects();
   }, []);
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
@@ -507,6 +530,110 @@ export default function AdminDashboard() {
     }
   };
 
+  // ==================== PROJECT HANDLERS ====================
+  const handleNewProject = () => {
+    setEditingProject({
+      id: `proj_${Date.now()}`,
+      title: '',
+      category: '',
+      desc: '',
+      image: 'https://images.unsplash.com/photo-1558981852-426c06a93f46?w=900&q=85',
+      video_url: '',
+      is_featured: false,
+      created_at: new Date().toISOString(),
+    });
+    setIsNewProject(true);
+  };
+
+  const handleEditProject = (proj: ProjectItem) => {
+    setEditingProject({ ...proj });
+    setIsNewProject(false);
+  };
+
+  const handleSaveProject = async () => {
+    if (!editingProject) return;
+    if (!editingProject.title.trim()) {
+      showToast('Judul proyek tidak boleh kosong', 'error');
+      return;
+    }
+
+    setSavingProject(true);
+    try {
+      const url = isNewProject ? '/api/projects' : `/api/projects/${editingProject.id}`;
+      const method = isNewProject ? 'POST' : 'PUT';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingProject),
+      });
+
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        showToast(data?.error || 'Gagal menyimpan proyek', 'error');
+        return;
+      }
+
+      if (data?.projects && Array.isArray(data.projects)) {
+        setProjects(data.projects);
+      } else {
+        setProjects((prev) => {
+          const idx = prev.findIndex((p) => p.id === editingProject.id);
+          if (idx >= 0) return prev.map((p) => (p.id === editingProject.id ? editingProject : p));
+          return [editingProject, ...prev];
+        });
+      }
+
+      showToast(isNewProject ? 'Proyek baru berhasil ditambahkan!' : 'Perubahan proyek berhasil disimpan!');
+      setEditingProject(null);
+    } catch {
+      showToast('Terjadi kesalahan saat menyimpan proyek', 'error');
+    } finally {
+      setSavingProject(false);
+    }
+  };
+
+  const handleDeleteProject = async (id: string) => {
+    if (!confirm('Yakin ingin menghapus proyek ini?')) return;
+    try {
+      const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        showToast(data?.error || 'Gagal menghapus proyek', 'error');
+        return;
+      }
+      if (data?.projects) {
+        setProjects(data.projects);
+      } else {
+        setProjects((prev) => prev.filter((p) => p.id !== id));
+      }
+      showToast('Proyek berhasil dihapus');
+    } catch {
+      showToast('Terjadi kesalahan saat menghapus proyek', 'error');
+    }
+  };
+
+  const handleProjectImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editingProject) return;
+    if (!file.type.startsWith('image/')) {
+      showToast('Pilih file gambar yang valid (JPG/PNG/WebP)', 'error');
+      return;
+    }
+
+    setUploadingProjectImage(true);
+    try {
+      const compressed = await compressImage(file);
+      setEditingProject({ ...editingProject, image: compressed });
+      showToast('Gambar proyek berhasil diupload!');
+    } catch {
+      showToast('Gagal memproses foto. Coba file lain.', 'error');
+    } finally {
+      setUploadingProjectImage(false);
+      e.target.value = '';
+    }
+  };
+
   const totalActive = products.filter((p) => p.is_active).length;
   const totalBestSeller = products.filter((p) => p.is_best_seller).length;
   const totalNewArrivals = products.filter((p) => p.is_new_arrival).length;
@@ -558,6 +685,7 @@ export default function AdminDashboard() {
           {[
             { key: 'products', icon: Package, label: 'Kelola Produk' },
             { key: 'categories', icon: Tag, label: 'Kelola Kategori' },
+            { key: 'projects', icon: Camera, label: 'Kelola Proyek' },
             { key: 'overview', icon: LayoutDashboard, label: 'Ringkasan & Statistik' },
             { key: 'settings', icon: Settings, label: 'Pengaturan Toko' },
           ].map((item) => (
@@ -567,10 +695,11 @@ export default function AdminDashboard() {
                 setTab(item.key as AdminTab);
                 setEditingProduct(null);
                 setEditingCategory(null);
+                setEditingProject(null);
               }}
               className={clsx(
                 'w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-sm transition-all',
-                tab === item.key && !editingProduct && !editingCategory
+                tab === item.key && !editingProduct && !editingCategory && !editingProject
                   ? 'bg-primary text-white font-semibold shadow-md shadow-primary/20'
                   : 'text-gray-mid hover:text-white hover:bg-dark-300'
               )}
@@ -621,12 +750,18 @@ export default function AdminDashboard() {
                 ? isNewCategory
                   ? 'Tambah Kategori Baru'
                   : `Edit Kategori: ${editingCategory.name}`
+                : editingProject
+                ? isNewProject
+                  ? 'Tambah Proyek Baru'
+                  : `Edit Proyek: ${editingProject.title}`
                 : tab === 'overview'
                 ? 'Dashboard Overview'
                 : tab === 'products'
                 ? 'Kelola Produk & Katalog'
                 : tab === 'categories'
                 ? 'Kelola Kategori'
+                : tab === 'projects'
+                ? 'Kelola Proyek'
                 : 'Pengaturan Toko'}
             </h1>
           </div>
@@ -635,6 +770,7 @@ export default function AdminDashboard() {
               onClick={() => {
                 fetchProducts();
                 fetchCategories();
+                fetchProjects();
               }}
               disabled={loading}
               className="p-2 rounded-lg text-silver hover:text-white hover:bg-dark-300 transition-colors"
@@ -1489,6 +1625,233 @@ export default function AdminDashboard() {
                   <button
                     onClick={() => setEditingCategory(null)}
                     disabled={savingCategory}
+                    className="btn-ghost px-6 py-3 text-sm text-silver hover:text-white"
+                  >
+                    Batal
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ==================== PROJECTS LIST ==================== */}
+          {tab === 'projects' && !editingProject && (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-white font-bold text-xl">Our Recent Projects ({projects.length})</h2>
+                  <p className="text-gray-mid text-sm mt-0.5">
+                    Kelola portofolio pemasangan lampu & tambahkan video sinematik (20-30 detik) untuk ditampilkan di halaman Home
+                  </p>
+                </div>
+                <button
+                  onClick={handleNewProject}
+                  className="btn-primary flex items-center gap-2 text-sm px-5 py-2.5 self-start sm:self-auto"
+                >
+                  <Plus className="w-4 h-4" /> Tambah Proyek Baru
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {projects.map((proj) => (
+                  <div
+                    key={proj.id}
+                    className="bg-dark-200 border border-white/10 rounded-2xl overflow-hidden shadow-lg flex flex-col"
+                  >
+                    <div className="relative h-48 bg-dark-300">
+                      <Image
+                        src={proj.image || 'https://images.unsplash.com/photo-1558981852-426c06a93f46?w=900&q=85'}
+                        alt={proj.title}
+                        fill
+                        unoptimized={proj.image?.startsWith('data:')}
+                        className="object-cover opacity-80"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-dark via-dark/40 to-transparent" />
+                      <div className="absolute top-3 left-3 flex flex-wrap items-center gap-1.5">
+                        <span className="bg-dark/80 backdrop-blur text-gray-200 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-white/10">
+                          {proj.category || 'Umum'}
+                        </span>
+                        {proj.is_featured && (
+                          <span className="bg-primary text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">
+                            Utama (Hero)
+                          </span>
+                        )}
+                      </div>
+                      {proj.video_url && (
+                        <div className="absolute top-3 right-3 bg-primary/90 backdrop-blur text-white text-[10px] font-semibold px-2.5 py-1 rounded-full flex items-center gap-1">
+                          <Play className="w-3 h-3 fill-white" /> Video
+                        </div>
+                      )}
+                      <div className="absolute bottom-0 left-0 right-0 p-4">
+                        <h3 className="text-white font-bold text-base line-clamp-1">{proj.title}</h3>
+                        <p className="text-gray-300 text-xs mt-1 line-clamp-2">{proj.desc}</p>
+                      </div>
+                    </div>
+                    <div className="p-4 flex items-center justify-end gap-2 border-t border-white/5 mt-auto">
+                      <button
+                        onClick={() => handleEditProject(proj)}
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium bg-dark-300 text-gray-200 hover:text-white hover:bg-white/10 transition-colors"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" /> Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteProject(proj.id)}
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium bg-red-950/50 text-red-300 hover:bg-red-900/60 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> Hapus
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ==================== ADD / EDIT PROJECT FORM ==================== */}
+          {tab === 'projects' && editingProject && (
+            <div className="max-w-2xl mx-auto">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setEditingProject(null)}
+                    className="p-2 rounded-lg text-silver hover:text-white hover:bg-dark-200 transition-colors"
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                  </button>
+                  <div>
+                    <h2 className="text-white font-bold text-xl">
+                      {isNewProject ? 'Tambah Proyek Baru' : 'Edit Proyek'}
+                    </h2>
+                    <p className="text-silver text-xs mt-0.5">
+                      Proyek akan langsung tampil di bagian Our Recent Projects pada halaman Beranda
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setEditingProject(null)}
+                  className="text-silver hover:text-white p-2 rounded-lg hover:bg-dark-200"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="bg-dark-200 border border-white/10 rounded-2xl p-6 space-y-5">
+                <div>
+                  <label className="text-sm font-medium text-gray-200 mb-1.5 block">
+                    Judul Proyek / Kendaraan <span className="text-primary">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={editingProject.title}
+                    onChange={(e) => setEditingProject({ ...editingProject, title: e.target.value })}
+                    className="input-field"
+                    placeholder="Contoh: Toyota Avanza — BILED Projector H4 90W"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-200 mb-1.5 block">
+                    Kategori / Jenis Pemasangan
+                  </label>
+                  <input
+                    type="text"
+                    value={editingProject.category}
+                    onChange={(e) => setEditingProject({ ...editingProject, category: e.target.value })}
+                    className="input-field"
+                    placeholder="Contoh: BILED Projector, Mini Projector, Fog Lamp"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-200 mb-1.5 block">
+                    Deskripsi Hasil Pemasangan
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={editingProject.desc}
+                    onChange={(e) => setEditingProject({ ...editingProject, desc: e.target.value })}
+                    className="input-field resize-none"
+                    placeholder="Jelaskan detail pemasangan, spesifikasi cahaya, atau hasil modifikasi..."
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-200 mb-2 block">
+                    Foto Thumbnail / Poster Proyek
+                  </label>
+                  <div className="relative h-48 rounded-xl overflow-hidden bg-dark-300 border border-white/10 mb-3">
+                    <Image
+                      src={editingProject.image || 'https://images.unsplash.com/photo-1558981852-426c06a93f46?w=900&q=85'}
+                      alt={editingProject.title || 'Preview Proyek'}
+                      fill
+                      unoptimized={editingProject.image?.startsWith('data:')}
+                      className="object-cover"
+                    />
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <input
+                      type="url"
+                      value={editingProject.image}
+                      onChange={(e) => setEditingProject({ ...editingProject, image: e.target.value })}
+                      className="input-field flex-1 text-xs font-mono"
+                      placeholder="https://... (URL foto)"
+                    />
+                    <label className="btn-secondary flex items-center justify-center gap-2 text-xs px-4 py-2.5 cursor-pointer flex-shrink-0">
+                      <Upload className="w-4 h-4" />
+                      {uploadingProjectImage ? 'Mengupload...' : 'Upload Foto'}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleProjectImageUpload}
+                        disabled={uploadingProjectImage}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-gray-200 mb-1.5 flex items-center gap-2">
+                    <Video className="w-4 h-4 text-primary" /> Link Video Sinematik (20-30 detik, Opsional)
+                  </label>
+                  <input
+                    type="url"
+                    value={editingProject.video_url || ''}
+                    onChange={(e) => setEditingProject({ ...editingProject, video_url: e.target.value })}
+                    className="input-field text-xs font-mono"
+                    placeholder="Paste link YouTube, Google Drive, atau URL file .mp4"
+                  />
+                  <p className="text-gray-mid text-xs mt-1.5">
+                    Mendukung link YouTube (`youtube.com/watch?v=...` / `youtu.be/...`), Google Drive (`drive.google.com/file/d/...`), atau URL video langsung (`.mp4`/`.webm`). Jika diisi, video akan diputar otomatis di Beranda.
+                  </p>
+                </div>
+
+                <div className="pt-2">
+                  <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(editingProject.is_featured)}
+                      onChange={(e) => setEditingProject({ ...editingProject, is_featured: e.target.checked })}
+                      className="w-4 h-4 accent-primary"
+                    />
+                    <span className="text-gray-200 text-sm font-medium">
+                      Jadikan Proyek Utama (Tampil Paling Besar / Hero di Beranda)
+                    </span>
+                  </label>
+                </div>
+
+                <div className="flex items-center gap-3 pt-4 border-t border-white/5">
+                  <button
+                    onClick={handleSaveProject}
+                    disabled={savingProject}
+                    className="btn-primary flex items-center gap-2 text-sm px-6 py-3"
+                  >
+                    <Save className="w-4 h-4" />
+                    {savingProject ? 'Menyimpan...' : 'Simpan Proyek'}
+                  </button>
+                  <button
+                    onClick={() => setEditingProject(null)}
+                    disabled={savingProject}
                     className="btn-ghost px-6 py-3 text-sm text-silver hover:text-white"
                   >
                     Batal

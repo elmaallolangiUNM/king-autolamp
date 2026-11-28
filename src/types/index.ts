@@ -12,6 +12,20 @@ export interface CategoryItem {
   icon?: string;
 }
 
+export interface ProjectItem {
+  id: string;
+  title: string;
+  category: string;
+  desc: string;
+  /** URL gambar thumbnail/poster */
+  image: string;
+  /** URL video sinematik (opsional, mp4 / embed URL) */
+  video_url?: string;
+  /** Jika true, tampilkan video sebagai hero utama (hanya 1 proyek) */
+  is_featured?: boolean;
+  created_at: string;
+}
+
 export interface ProductVariant {
   id: string;
   name: string; // e.g. "H4", "H7", "9005/HB3"
