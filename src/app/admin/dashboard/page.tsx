@@ -86,6 +86,8 @@ export default function AdminDashboard() {
   const [isNewProject, setIsNewProject] = useState(false);
   const [savingProject, setSavingProject] = useState(false);
   const [uploadingProjectImage, setUploadingProjectImage] = useState(false);
+  const [uploadingProjectVideo, setUploadingProjectVideo] = useState(false);
+  const [videoUploadProgress, setVideoUploadProgress] = useState(0);
 
   // Settings state
   const [waNumber, setWaNumber] = useState('6282298995682');
@@ -630,6 +632,79 @@ export default function AdminDashboard() {
       showToast('Gagal memproses foto. Coba file lain.', 'error');
     } finally {
       setUploadingProjectImage(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleProjectVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !editingProject) return;
+
+    const isVideo = file.type.startsWith('video/') || /\.(mp4|webm|mov)$/i.test(file.name);
+    if (!isVideo) {
+      showToast('Pilih file video yang valid (MP4 / WebM / MOV)', 'error');
+      e.target.value = '';
+      return;
+    }
+
+    const maxBytes = 15 * 1024 * 1024; // 15 MB
+    if (file.size > maxBytes) {
+      showToast('Ukuran video terlalu besar (maksimal 15 MB untuk 20-30 detik)', 'error');
+      e.target.value = '';
+      return;
+    }
+
+    setUploadingProjectVideo(true);
+    setVideoUploadProgress(0);
+
+    try {
+      const buffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      const chunkSize = 655360; // 640 KB binary -> ~853 KB base64 (< 1MB Upstash limit)
+      const totalChunks = Math.ceil(bytes.length / chunkSize);
+      const videoId = `vid_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+
+      let finalUrl = '';
+      for (let i = 0; i < totalChunks; i++) {
+        const start = i * chunkSize;
+        const end = Math.min(start + chunkSize, bytes.length);
+        const chunk = bytes.subarray(start, end);
+
+        let binary = '';
+        for (let j = 0; j < chunk.length; j++) {
+          binary += String.fromCharCode(chunk[j]);
+        }
+        const base64Data = btoa(binary);
+
+        const res = await fetch('/api/videos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            videoId,
+            chunkIndex: i,
+            totalChunks,
+            chunkSize,
+            totalBytes: bytes.length,
+            contentType: file.type || 'video/mp4',
+            data: base64Data,
+          }),
+        });
+
+        const data = await res.json().catch(() => null);
+        if (!res.ok) {
+          throw new Error(data?.error || 'Gagal mengupload video');
+        }
+        finalUrl = data.videoUrl;
+        setVideoUploadProgress(Math.round(((i + 1) / totalChunks) * 100));
+      }
+
+      setEditingProject((prev) => (prev ? { ...prev, video_url: finalUrl } : prev));
+      showToast('Video sinematik berhasil diupload! Klik Simpan Proyek untuk mempublikasikan.');
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Gagal mengupload video';
+      showToast(msg, 'error');
+    } finally {
+      setUploadingProjectVideo(false);
       e.target.value = '';
     }
   };
@@ -1811,18 +1886,81 @@ export default function AdminDashboard() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-gray-200 mb-1.5 flex items-center gap-2">
-                    <Video className="w-4 h-4 text-primary" /> Link Video Sinematik (20-30 detik, Opsional)
+                  <label className="text-sm font-medium text-gray-200 mb-2 flex items-center gap-2">
+                    <Video className="w-4 h-4 text-primary" /> Video Sinematik (20-30 detik, Putar Otomatis di Beranda)
                   </label>
+
+                  {editingProject.video_url && (
+                    <div className="relative rounded-xl overflow-hidden bg-dark-300 border border-white/10 mb-3">
+                      {editingProject.video_url.startsWith('/api/videos/') ||
+                      editingProject.video_url.startsWith('data:video/') ||
+                      /\.(mp4|webm|ogg|mov)(\?|$)/i.test(editingProject.video_url) ? (
+                        <video
+                          src={editingProject.video_url}
+                          controls
+                          muted
+                          loop
+                          playsInline
+                          className="w-full max-h-64 object-cover bg-black"
+                        />
+                      ) : (
+                        <div className="p-4 text-xs text-silver flex items-center gap-2">
+                          <Play className="w-4 h-4 text-primary" />
+                          <span className="truncate">{editingProject.video_url}</span>
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setEditingProject({ ...editingProject, video_url: '' })}
+                        className="absolute top-2 right-2 bg-red-600/90 hover:bg-red-600 text-white text-xs px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-lg"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> Hapus Video
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-3">
+                    <label
+                      className={clsx(
+                        'btn-primary text-xs px-4 py-2.5 inline-flex items-center justify-center gap-2 cursor-pointer flex-shrink-0',
+                        uploadingProjectVideo && 'opacity-70 pointer-events-none'
+                      )}
+                    >
+                      <Upload className="w-4 h-4" />
+                      {uploadingProjectVideo
+                        ? `Mengupload Video... ${videoUploadProgress}%`
+                        : 'Upload Video langsung dari Laptop / HP'}
+                      <input
+                        type="file"
+                        accept="video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov"
+                        onChange={handleProjectVideoUpload}
+                        disabled={uploadingProjectVideo}
+                        className="hidden"
+                      />
+                    </label>
+                    <span className="text-xs text-silver">
+                      Format MP4/WebM (maks. 15 MB, durasi 20–30 detik)
+                    </span>
+                  </div>
+
+                  {uploadingProjectVideo && (
+                    <div className="w-full bg-dark-300 rounded-full h-2 mb-3 overflow-hidden border border-white/10">
+                      <div
+                        className="bg-primary h-full transition-all duration-200"
+                        style={{ width: `${videoUploadProgress}%` }}
+                      />
+                    </div>
+                  )}
+
                   <input
                     type="url"
                     value={editingProject.video_url || ''}
                     onChange={(e) => setEditingProject({ ...editingProject, video_url: e.target.value })}
                     className="input-field text-xs font-mono"
-                    placeholder="Paste link YouTube, Google Drive, atau URL file .mp4"
+                    placeholder="Atau paste URL video langsung (.mp4) / YouTube / Google Drive (opsional)"
                   />
                   <p className="text-gray-mid text-xs mt-1.5">
-                    Mendukung link YouTube (`youtube.com/watch?v=...` / `youtu.be/...`), Google Drive (`drive.google.com/file/d/...`), atau URL video langsung (`.mp4`/`.webm`). Jika diisi, video akan diputar otomatis di Beranda.
+                    Video yang diupload akan otomatis terputar (muted & loop) di thumbnail saat pengunjung scroll halaman Home.
                   </p>
                 </div>
 

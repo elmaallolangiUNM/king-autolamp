@@ -36,3 +36,20 @@ export async function redisSet(key: string, value: string): Promise<boolean> {
     return false;
   }
 }
+
+export async function redisDel(key: string): Promise<boolean> {
+  if (!REDIS_URL || !REDIS_TOKEN) return false;
+  try {
+    const res = await fetch(`${REDIS_URL}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${REDIS_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(['DEL', key]),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}

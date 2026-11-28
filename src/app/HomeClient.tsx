@@ -18,7 +18,14 @@ const WHY_US = [
 
 function isVideoUrl(url?: string) {
   if (!url) return false;
-  return url.includes('youtube.com') || url.includes('youtu.be') || url.includes('drive.google.com') || /\.(mp4|webm|ogg)(\?|$)/i.test(url);
+  return (
+    url.startsWith('/api/videos/') ||
+    url.startsWith('data:video/') ||
+    url.includes('youtube.com') ||
+    url.includes('youtu.be') ||
+    url.includes('drive.google.com') ||
+    /\.(mp4|webm|ogg|mov)(\?|$)/i.test(url)
+  );
 }
 
 function getEmbedUrl(url: string) {
@@ -77,7 +84,18 @@ export default function HomeClient({ initialProducts, initialCategories, initial
       );
     }
     if (isVideoUrl(proj.video_url)) {
-      return <video src={proj.video_url} autoPlay muted loop playsInline className={`absolute inset-0 w-full h-full object-cover ${className || ''}`} />;
+      return (
+        <video
+          src={proj.video_url}
+          poster={proj.image || undefined}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          className={`absolute inset-0 w-full h-full object-cover ${className || ''}`}
+        />
+      );
     }
     return (
       <Image
